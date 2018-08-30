@@ -1,0 +1,11 @@
+language: go
+
+go:
+  - "1.11.x"
+  - master
+
+script:
+  - gofmt -l .
+  - golint ./...
+  - go tool vet -shadow .
+  - go test -v -race $(go list ./... | grep -v vendor)
