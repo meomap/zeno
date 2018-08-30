@@ -13,7 +13,7 @@ require (
 	github.com/pkg/errors v0.8.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/testify v1.2.2
-	golang.org/x/tools v0.0.0-20180826000951-f6ba57429505 // indirect
+	golang.org/x/tools v0.0.0-20180828015842-6cd1fcedba52 // indirect
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 	gopkg.in/yaml.v2 v2.2.1
 )

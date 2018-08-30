@@ -1,5 +1,5 @@
 # zeno
-[![Go Report Card](https://goreportcard.com/badge/github.com/meomap/zeno)](https://goreportcard.com/report/github.com/meomap/zeno)[![Build Status](https://travis-ci.org/meomap/zeno.svg?branch=master)](https://travis-ci.org/meomap/zeno)
+[![Go Report Card](https://goreportcard.com/badge/github.com/meomap/zeno)](https://goreportcard.com/report/github.com/meomap/zeno) [![Build Status](https://travis-ci.org/meomap/zeno.svg?branch=master)](https://travis-ci.org/meomap/zeno) [![Coverage Status](https://coveralls.io/repos/github/meomap/zeno/badge.svg?branch=master)](https://coveralls.io/github/meomap/zeno?branch=master)
 
 CLI tool to examine ansible playbooks affected by git changes
 
