@@ -17,6 +17,7 @@ func TestMatchPlaybook(t *testing.T) {
 		playbook string
 		diffs    []string
 		setup    func()
+		err      bool
 		want     bool
 	}{
 		{
@@ -50,13 +51,32 @@ func TestMatchPlaybook(t *testing.T) {
 			},
 			want: false,
 		},
+		{
+			caseName: "playbook_error",
+			playbook: "error.yml",
+			diffs:    []string{"roles/r1/t1.yml", "roles/r2/t2.yml"},
+			setup: func() {
+				ds.SetFile("error.yml", []byte(`
+- name: Test playbook with unexist role
+  hosts: all
+  roles:
+  - role: r3`))
+				ds.SetFile("roles/r1/t1.yml", []byte(""))
+				ds.SetFile("roles/r2/t2.yml", []byte(""))
+			},
+			err: true,
+		},
 	} {
 		t.Run(fmt.Sprintf("case=%s", c.caseName), func(t *testing.T) {
 			ds.Clear()
 			c.setup()
 			out, err := MatchPlaybook(c.playbook, c.diffs, ".", ds)
-			require.NoError(t, err)
-			assert.Equal(t, c.want, out)
+			if c.err == true {
+				assert.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, c.want, out)
+			}
 		})
 	}
 }

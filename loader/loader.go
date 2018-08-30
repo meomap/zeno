@@ -20,7 +20,6 @@ type DataSource interface {
 // MemoryLoader implements IO operations for testing
 type MemoryLoader struct {
 	files map[string][]byte
-	dirs  map[string][]string
 }
 
 // ReadFile returns byte content given preload file name
@@ -69,18 +68,25 @@ func (ml MemoryLoader) ReadDir(name string) ([]string, error) {
 	if !ok {
 		return nil, &os.PathError{Err: os.ErrNotExist}
 	}
-	children := strings.Split(string(content), ",")
+	// hook to raise unexpected error
+	val := string(content)
+	if val == "unexpected_error" {
+		ok = false
+		return nil, errors.New(val)
+	}
+	children := strings.Split(val, ",")
 	return children, nil
 }
 
 // IsExist returns true if given file name exists
 func (ml MemoryLoader) IsExist(name string) (ok bool, err error) {
-	if _, ok = ml.files[name]; !ok {
-		for dir := range ml.dirs {
-			if strings.HasPrefix(dir, name) {
-				ok = true
-				break
-			}
+	var content []byte
+	if content, ok = ml.files[name]; ok {
+		// hook to raise unexpected error
+		val := string(content)
+		if val == "unexpected_error" {
+			ok = false
+			err = errors.New(val)
 		}
 	}
 	return
@@ -89,7 +95,6 @@ func (ml MemoryLoader) IsExist(name string) (ok bool, err error) {
 // Clear reset in-mem data
 func (ml *MemoryLoader) Clear() {
 	ml.files = nil
-	ml.dirs = nil
 }
 
 // FileLoader implements IO operation on local disk file

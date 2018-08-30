@@ -16,6 +16,7 @@ func TestParsePlaybook(t *testing.T) {
 		caseName string
 		playbook string
 		setup    func()
+		err      bool
 		want     []string
 	}{
 		{
@@ -73,13 +74,46 @@ func TestParsePlaybook(t *testing.T) {
 			},
 			want: []string{"roles/r1", "roles/r2"},
 		},
+		{
+			caseName: "playbook_not_exist",
+			playbook: "not_exist.yml",
+			setup:    func() {},
+			err:      true,
+		},
+		{
+			caseName: "playbook_with_malformed_content",
+			playbook: "malformed.yml",
+			setup: func() {
+				ds.SetFile("malformed.yml", []byte(`abcde`))
+			},
+			err: true,
+		},
+		{
+			caseName: "playbook_with_roles_not_exist",
+			playbook: "roles_not_exist.yml",
+			setup: func() {
+				ds.SetFile("roles_not_exist.yml", []byte(`
+- name: Test multiple roles
+  hosts: all
+  roles:
+  - role: r0
+  - role: r1
+`))
+				ds.SetFile("roles/r1", []byte(""))
+			},
+			err: true,
+		},
 	} {
 		t.Run(fmt.Sprintf("case=%s", c.caseName), func(t *testing.T) {
 			ds.Clear()
 			c.setup()
 			out, err := ParsePlaybook(c.playbook, "", ds)
-			require.NoError(t, err)
-			assert.Equal(t, c.want, out)
+			if c.err == true {
+				assert.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, c.want, out)
+			}
 		})
 	}
 }
@@ -90,6 +124,7 @@ func TestSearchRolePath(t *testing.T) {
 		caseName string
 		role     string
 		setup    func()
+		err      bool
 		want     string
 	}{
 		{
@@ -116,13 +151,31 @@ func TestSearchRolePath(t *testing.T) {
 			},
 			want: "other/another-role",
 		},
+		{
+			caseName: "unexpected_error_when_check_role_exist",
+			role:     "must-raise-error",
+			setup: func() {
+				ds.SetFile("must-raise-error", []byte("unexpected_error"))
+			},
+			err: true,
+		},
+		{
+			caseName: "error_role_not_exist",
+			role:     "role-not-exist",
+			setup:    func() {},
+			err:      true,
+		},
 	} {
 		t.Run(fmt.Sprintf("case=%s", c.caseName), func(t *testing.T) {
 			ds.Clear()
 			c.setup()
 			out, err := searchRolePath(c.role, "", ds)
-			require.NoError(t, err)
-			assert.Equal(t, c.want, out)
+			if c.err == true {
+				assert.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, c.want, out)
+			}
 		})
 	}
 }
@@ -134,6 +187,7 @@ func TestParseTask(t *testing.T) {
 		task     string
 		baseDir  string
 		setup    func()
+		err      bool
 		want     []string
 	}{
 		{
@@ -194,6 +248,57 @@ func TestParseTask(t *testing.T) {
 			},
 			want: []string{"/tmp/depricatedthing.yml"},
 		},
+		{
+			caseName: "task_not_exist",
+			task:     "task_not_exist.yml",
+			setup:    func() {},
+			err:      true,
+		},
+		{
+			caseName: "task_file_content_malformed",
+			task:     "malformed.yml",
+			baseDir:  "/tmp/r4/tasks",
+			setup: func() {
+				ds.SetFile("/tmp/r4/tasks/malformed.yml", []byte(`abcde`))
+			},
+			err: true,
+		},
+		{
+			caseName: "include_tasks_content_malformed",
+			task:     "include_tasks_malformed.yml",
+			baseDir:  "/tmp/r5/tasks",
+			setup: func() {
+				ds.SetFile("/tmp/r5/tasks/include_tasks_malformed.yml", []byte(`
+- name: Do include tasks with malformed content
+  include_tasks: ../../malformed.yml`))
+				ds.SetFile("/tmp/malformed.yml", []byte(`abcde`))
+			},
+			err: true,
+		},
+		{
+			caseName: "import_tasks_content_malformed",
+			task:     "import_tasks_malformed.yml",
+			baseDir:  "/tmp/r7/tasks",
+			setup: func() {
+				ds.SetFile("/tmp/r7/tasks/import_tasks_malformed.yml", []byte(`
+- name: Do import tasks with malformed content
+  import_tasks: ../../malformed.yml`))
+				ds.SetFile("/tmp/malformed.yml", []byte(`abcde`))
+			},
+			err: true,
+		},
+		{
+			caseName: "depricated_include_content_malformed",
+			task:     "depricated_include_malformed.yml",
+			baseDir:  "/tmp/r8/tasks",
+			setup: func() {
+				ds.SetFile("/tmp/r8/tasks/depricated_include_malformed.yml", []byte(`
+- name: Do depricated include with malformed content
+  include: ../../malformed.yml`))
+				ds.SetFile("/tmp/malformed.yml", []byte(`abcde`))
+			},
+			err: true,
+		},
 	} {
 		t.Run(fmt.Sprintf("case=%s", c.caseName), func(t *testing.T) {
 			ds.Clear()
@@ -203,8 +308,12 @@ func TestParseTask(t *testing.T) {
 				root = "."
 			}
 			out, err := parseTask(c.task, root, ds)
-			require.NoError(t, err)
-			assert.Equal(t, c.want, out)
+			if c.err == true {
+				assert.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, c.want, out)
+			}
 		})
 	}
 }
@@ -215,6 +324,7 @@ func TestParseRole(t *testing.T) {
 		caseName string
 		role     string
 		setup    func()
+		err      bool
 		want     []string
 	}{
 		{
@@ -245,13 +355,39 @@ func TestParseRole(t *testing.T) {
 			},
 			want: []string{"roles/include-tasks", "test/something.yml"},
 		},
+		{
+			caseName: "role_with_path_not_exist",
+			role:     "role-path-not-exist",
+			setup:    func() {},
+			err:      true,
+		},
+		{
+			caseName: "unexpected_error_when_ReadDir",
+			role:     "unexpected-error",
+			setup: func() {
+				ds.SetFile("roles/unexpected-error", []byte(`unexpected_error`))
+			},
+			err: true,
+		},
+		{
+			caseName: "role_with_malformed_task_content",
+			role:     "malformed-task",
+			setup: func() {
+				ds.SetFile("roles/malformed-tasks/tasks/malformed.yml", []byte(`abcde`))
+			},
+			err: true,
+		},
 	} {
 		t.Run(fmt.Sprintf("case=%s", c.caseName), func(t *testing.T) {
 			ds.Clear()
 			c.setup()
 			out, err := parseRole(c.role, "", ds)
-			require.NoError(t, err)
-			assert.Equal(t, c.want, out)
+			if c.err == true {
+				assert.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, c.want, out)
+			}
 		})
 	}
 }
