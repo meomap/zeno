@@ -1,4 +1,6 @@
 # zeno
+[![Go Report Card](https://goreportcard.com/badge/github.com/meomap/zeno)](https://goreportcard.com/report/github.com/meomap/zeno)[![Build Status](https://travis-ci.org/meomap/zeno.svg?branch=master)](https://travis-ci.org/meomap/zeno)
+
 CLI tool to examine ansible playbooks affected by git changes
 
 ## Installation
