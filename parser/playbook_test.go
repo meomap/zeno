@@ -34,7 +34,7 @@ func TestParsePlaybook(t *testing.T) {
 			playbook: "single_role_explicit.yml",
 			setup: func() {
 				ds.SetFile("single_role_explicit.yml", []byte(`
-- name: Test single role explicity
+- name: Test single role explicitly
   hosts: all
   roles:
   - role: roles/r1
