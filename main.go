@@ -23,9 +23,12 @@ func main() {
 	flag.Parse()
 
 	// required args
-	if *pbsIn == "" || *filesIn == "" {
+	if *pbsIn == "" {
 		flag.PrintDefaults()
 		os.Exit(1)
+	}
+	if *filesIn == "" {
+		return
 	}
 	if *debug == false {
 		log.SetOutput(ioutil.Discard)
