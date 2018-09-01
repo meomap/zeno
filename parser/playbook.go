@@ -42,7 +42,7 @@ func ParsePlaybook(filePath string, repoDir string, ds loader.DataSource) ([]str
 		return nil, errors.Wrapf(err, "yaml.Unmarshal file_path=%s", filePath)
 	}
 	playbookRoot := filepath.Dir(path.Join(repoDir, filePath))
-	deps := []string{}
+	deps := []string{playbookRoot}
 	for _, play := range playbook {
 		for _, role := range play.Roles {
 			roleDeps, rErr := parseRole(role.Name, playbookRoot, ds)

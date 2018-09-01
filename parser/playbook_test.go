@@ -28,7 +28,7 @@ func TestParsePlaybook(t *testing.T) {
   hosts: all`))
 			},
 
-			want: []string{},
+			want: []string{"."},
 		},
 		{
 			caseName: "playbook_with_single_role_explicit_path",
@@ -42,7 +42,7 @@ func TestParsePlaybook(t *testing.T) {
 `))
 				ds.SetFile("roles/r1", []byte(""))
 			},
-			want: []string{"roles/r1"},
+			want: []string{".", "roles/r1"},
 		},
 		{
 			caseName: "playbook_with_single_role_implicit_path",
@@ -56,7 +56,7 @@ func TestParsePlaybook(t *testing.T) {
 `))
 				ds.SetFile("roles/r2", []byte(""))
 			},
-			want: []string{"roles/r2"},
+			want: []string{".", "roles/r2"},
 		},
 		{
 			caseName: "playbook_with_multiple_roles",
@@ -72,7 +72,7 @@ func TestParsePlaybook(t *testing.T) {
 				ds.SetFile("roles/r1", []byte(""))
 				ds.SetFile("roles/r2", []byte(""))
 			},
-			want: []string{"roles/r1", "roles/r2"},
+			want: []string{".", "roles/r1", "roles/r2"},
 		},
 		{
 			caseName: "playbook_not_exist",
